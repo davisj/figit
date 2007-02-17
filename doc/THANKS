@@ -1,0 +1,13 @@
+THANKS
+======
+
+Credit is due to Linus Torvalds and Tim Webster for providing a good deal of 
+the food for thought that went into the design of Figit in the form of some
+interesting postings to the comp.version-control.git mailing list.
+http://article.gmane.org/gmane.comp.version-control.git/29765
+http://article.gmane.org/gmane.comp.version-control.git/29354
+
+
+Also many thanks to Robey Pointer and the Paramiko project for creating a very 
+nice piece of software. 
+https://launchpad.net/paramiko
