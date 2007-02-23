@@ -17,6 +17,18 @@
 # along with Figit; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
+############################################################################
+###############Some user editable variables ################################
+
+VCSNAME = 'git'  # Version control backend to be used.
+INSTALLBRANCH = 'install'  # Name of vcs branch which mirrors production.
+
+# IGNORE's are gnored by Figit but may be tracked by the VCS.
+IGNORE = ['.figit*','.git*', '.cvs*', '.svn*', '.bzr*']
+
+############################################################################
+############################################################################
+
 """
 figit aims to provide:
 Config file version control and ssh distribution for the impatient.
@@ -29,14 +41,6 @@ import getpass
 from commands import getoutput as go
 from os.path import join
 from Figit import utils, manifest, channels, vcs, run
-
-### Some user editable variables ###
-
-VCSNAME = 'git'  # Version control backend to be used.
-INSTALLBRANCH = 'install'  # Name of vcs branch which mirrors production.
-
-# IGNORE's are gnored by Figit but may be tracked by the VCS.
-IGNORE = ['.figit*','.git*', '.cvs*', '.svn*', '.bzr*']
 
 ### You shouldn't have to touch anything below this line. ###
 
