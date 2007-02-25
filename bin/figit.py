@@ -123,12 +123,15 @@ if __name__=='__main__':
         # note that remove does not effect distribution hosts          
         VCS = utils.get_vcs(VCSNAME, wd, INSTALLBRANCH)
         M = manifest.Manifest(wd, VCS.branch())
-        filenames = args[1:]
-        for f in filenames:
+        raw_names = args[1:]
+        fixed_names = []
+        for f in raw_names:
             rp = utils.fixpath(f, src, wd)['rp']
             M.pop(rp)
             print "Removing file %s" % rp
-            VCS.remove(rp)
+            fixed_names.append(rp)
+        print "removing %s" % utils.list2string(fixed_names)
+        VCS.remove(utils.list2string(fixed_names))
         M.commit(VCS.branch())
         utils.quit()
 

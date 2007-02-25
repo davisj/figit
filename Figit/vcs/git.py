@@ -11,6 +11,8 @@ class Git:
         self.ignorefile = '.gitignore'
         self.ignore_patterns = ['*~', '*.pyc', 'manifest.bak'] 
         self.INSTALLBRANCH = INSTALLBRANCH
+        self._init_branch = self.branch()
+        assert self._init_branch != INSTALLBRANCH
 
     def initdb(self):
         """Initialize a vcs working directory."""
@@ -26,8 +28,11 @@ class Git:
         
     def branch(self, branchname=None):
         """Create a new branch or report the current branch name."""
-        if branchname is None:  # Just report the current branch name.            
-            return open(join(".git", "HEAD")).read().split(sep)[-1].strip()
+        if branchname is None:  # Just report the current branch name.
+            try:          
+                return open(join(".git", "HEAD")).read().split(sep)[-1].strip()
+            except IOError:
+                return None
         else:  # Create the named branch.
             return go('git branch %s' % branchname)
             
@@ -46,14 +51,12 @@ class Git:
 
     def remove(self, files):
         """Remove files from the repository."""
-        _init_branch = self.branch()
-        assert _init_branch != self.INSTALLBRANCH
         self.checkout(self.INSTALLBRANCH)
         out = go("git rm -f %s" % files)
         out += go("git commit -m 'figit: deleted %s'" % files)
-        self.checkout(_init_branch)
-        out += self.merge("figit: removed %s" % files,
-                          _init_branch, self.INSTALLBRANCH)
+        self.checkout(self._init_branch)
+        out += self.merge("figit: merging deletion of %s" % files,
+                          self._init_branch, self.INSTALLBRANCH)
         return out
         
     def diff(self):
@@ -62,12 +65,11 @@ class Git:
                   % self.INSTALLBRANCH).split()
 
     def merge(self, message, to_branch, from_branch):
-        _init_branch = self.branch()
         self.checkout(to_branch)
         out = go('git merge "%s" %s %s' 
                   % (message, to_branch, from_branch))
-        if self.branch() != _init_branch:
-            self.checkout(_init_branch)
+        if self.branch() != self._init_branch:
+            self.checkout(self._init_branch)
         return out
         
     def commit(self, message, files):
