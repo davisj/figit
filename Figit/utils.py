@@ -40,7 +40,7 @@ def fixpath(filename, src, wd):
                 'sp':filename.replace(wd,src), 
                 'rp':filename.replace(wd+sep,'')}
     else:
-        filename = os.path.abspath(filename)
+        filename = os.path.abspath(join(wd, filename))
         if filename.startswith(wd):
             return {'wp':filename, 
                     'sp':filename.replace(wd,src), 
@@ -169,6 +169,9 @@ def get_vcs(vcsname, wd, INSTALLBRANCH):
     if vcsname.lower() == 'git': 
         from Figit.vcs import git
         return git.Git(wd, INSTALLBRANCH)
+    elif vcsname.lower() == 'bzr': 
+        from Figit.vcs import bzr
+        return bzr.Bzr(wd, INSTALLBRANCH)
     else:
         # CVS, SVN, BZR....
         pass

@@ -7,9 +7,10 @@ from os.path import join, sep
 class Git:
 
     def __init__(self, wd, INSTALLBRANCH):
-        self.wd = wd  
         self.ignorefile = '.gitignore'
         self.ignore_patterns = ['*~', '*.pyc', 'manifest.bak'] 
+        self.wd = wd
+        self.installdir = wd        
         self.INSTALLBRANCH = INSTALLBRANCH
         self._init_branch = self.branch()
         assert self._init_branch != INSTALLBRANCH

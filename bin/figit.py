@@ -18,7 +18,7 @@
 # 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 
 ############################################################################
-###############Some user editable variables ################################
+################### Some user editable variables ###########################
 
 VCSNAME = 'git'  # Version control backend to be used.
 INSTALLBRANCH = 'install'  # Name of vcs branch which mirrors production.
@@ -130,7 +130,6 @@ if __name__=='__main__':
             M.pop(rp)
             print "Removing file %s" % rp
             fixed_names.append(rp)
-        print "removing %s" % utils.list2string(fixed_names)
         VCS.remove(utils.list2string(fixed_names))
         M.commit(VCS.branch())
         utils.quit()
@@ -155,24 +154,28 @@ if __name__=='__main__':
         channel = utils.get_channel(user, hosts[0], port, sudopw)
         VCS = utils.get_vcs(VCSNAME, wd, INSTALLBRANCH)
         _init_branch = VCS.branch()
-        assert _init_branch != INSTALLBRANCH
         VCS.checkout(INSTALLBRANCH)
         M = manifest.Manifest(wd, VCS.branch())
-        filenames = args[1:]
-        # We remove directories from the list to avoid potential commit errors.
+        filenames = args[1:] # filenames = channel.ls(args[1:])
+        # Remove directories from the list to avoid potential commit errors.
         nondirectories = []
         for f in filenames:
             fp = utils.fixpath(f, src, wd)
-            if not os.path.exists(os.path.dirname(fp['wp'])):
-                os.makedirs(os.path.dirname(fp['wp']))
+            print "Source: %s" % src
+            print "WD: %s" % wd
+            print "File: %s" % f
+            print fp
+            installpath = join(VCS.installdir, fp['rp'])
+            if not os.path.exists(os.path.dirname(installpath)):
+                os.makedirs(os.path.dirname(installpath))
             uid, gid, mode, filetype, digest = channel.stats(fp['sp'])
             print "%s %s:%s %s %s" % (fp['rp'], uid, gid, mode, digest)
             if filetype.startswith('directory'):
-                print "** Creating directory: %s **" % os.path.dirname(fp['wp'])
-                os.mkdir(fp['wp'])  # Directories are created not copied.
+                print "** Creating directory: %s **" % os.path.dirname(installpath)
+                os.mkdir(installpath)  # Directories are created not copied.
             else:
                 nondirectories.append(fp['rp'])
-                channel.get(fp['sp'], fp['wp'])
+                channel.get(fp['sp'], installpath)
             M.update( fp['rp'], "%s:%s %s %s" % (uid,gid,mode,digest) )
             print "** Writing manifest entry **" 
             print "** Adding file to '%s' **" % INSTALLBRANCH
@@ -181,7 +184,7 @@ if __name__=='__main__':
         M.commit(VCS.branch())
         commitfiles = utils.list2string(nondirectories)
         print "** Commiting new files to '%s' **" % INSTALLBRANCH
-        VCS.commit("figit: Added %s" % commitfiles, commitfiles)
+        VCS.commitall("figit: Added %s" % commitfiles)
         VCS.checkout(_init_branch)
         print "** Merging %s to '%s' from '%s' **" % (commitfiles, _init_branch, 
                                                   INSTALLBRANCH)

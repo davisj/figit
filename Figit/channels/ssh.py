@@ -120,9 +120,9 @@ class SSHChannel:
             # Remember permissions of parent directory, then upload file.
             dmode = self.run("stat -c %a " + os.path.dirname(rpath))[0].strip()
             if dmode[-1] < 7:
-                dirmodded = True
                 self.run("echo %s | sudo chmod %s %s" % (self.sudopw, 'o+rwx',
                                                         os.path.dirname(rpath)))
+                dirmodded = True
             else:
                 dirmodded = False
             self.run("echo %s | sudo chmod %s %s" % (self.sudopw, '666', rpath))
