@@ -1,13 +1,13 @@
-# Git VCS wrapper/backend for FIgit.
+# Mercurial VCS wrapper/backend for FIgit.
 
 import os
 from commands import getoutput as go
 from os.path import join, sep        
         
-class Git:
+class Hg:
 
     def __init__(self, wd, INSTALLBRANCH):
-        self.ignorefile = '.gitignore'
+        self.ignorefile = '.hgignore'
         self.ignore_patterns = ['*~', '*.pyc', 'manifest.bak'] 
         self.wd = wd
         self.installdir = wd        
@@ -17,14 +17,14 @@ class Git:
 
     def initdb(self):
         """Initialize a vcs working directory."""
-        out = go('git init-db')  + '\n'
+        out = go('hg init')  + '\n'
         vcsignorefile = open(self.ignorefile, 'w')
         for pattern in self.ignore_patterns:
             vcsignorefile.write("%s\n" % pattern)
         vcsignorefile.close()
-        out += go('git add .')
-        out += go("git commit -a -m 'figit: Initial commit.'")
-        out += go('git branch %s' % self.INSTALLBRANCH)
+        out += go('hg add .')
+        out += go("hg commit -m 'figit: Initial commit.'")
+        out += go('hg branch %s' % self.INSTALLBRANCH)
         return out
         
     def branch(self, branchname=None):
@@ -35,11 +35,11 @@ class Git:
             except IOError:
                 return None
         else:  # Create the named branch.
-            return go('git branch %s' % branchname)
+            return go('hg branch %s' % branchname)
             
     def checkout(self, branchname):
         """Switch working directory to branchname."""
-        return go('git checkout %s' % branchname)
+        return go('hg checkout %s' % branchname)
         
     def add(self, files):
         """Add new files to the INSTALLBRANCH"""     

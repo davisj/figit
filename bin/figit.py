@@ -150,7 +150,6 @@ if __name__=='__main__':
         # 2. Create directories / download files / update manifest 
         # 3. add / commit new files to vcs INSTALLBRANCH
         # 4. switch back to _init_branch and merge in new files from install
-        
         channel = utils.get_channel(user, hosts[0], port, sudopw)
         VCS = utils.get_vcs(VCSNAME, wd, INSTALLBRANCH)
         _init_branch = VCS.branch()
@@ -168,7 +167,11 @@ if __name__=='__main__':
             installpath = join(VCS.installdir, fp['rp'])
             if not os.path.exists(os.path.dirname(installpath)):
                 os.makedirs(os.path.dirname(installpath))
-            uid, gid, mode, filetype, digest = channel.stats(fp['sp'])
+            try:
+                uid, gid, mode, filetype, digest = channel.stats(fp['sp'])
+            except IOError, (errno, strerror):
+                # Typically means file not found on src host.
+                print "I/O error(%s): %s" % (errno, strerror)
             print "%s %s:%s %s %s" % (fp['rp'], uid, gid, mode, digest)
             if filetype.startswith('directory'):
                 print "** Creating directory: %s **" % os.path.dirname(installpath)
@@ -178,21 +181,24 @@ if __name__=='__main__':
                 channel.get(fp['sp'], installpath)
             M.update( fp['rp'], "%s:%s %s %s" % (uid,gid,mode,digest) )
             print "** Writing manifest entry **" 
-            print "** Adding file to '%s' **" % INSTALLBRANCH
+            print "** Adding file to branch: '%s' **" % INSTALLBRANCH
             VCS.add(fp['rp'])
         print "** Writing manifest changes to disk **"
         M.commit(VCS.branch())
         commitfiles = utils.list2string(nondirectories)
-        print "** Commiting new files to '%s' **" % INSTALLBRANCH
+        print "** Commiting new files to branch: '%s' **" % INSTALLBRANCH
         VCS.commitall("figit: Added %s" % commitfiles)
         VCS.checkout(_init_branch)
         print "** Merging %s to '%s' from '%s' **" % (commitfiles, _init_branch, 
-                                                  INSTALLBRANCH)
+                                                    INSTALLBRANCH)
         VCS.merge("figit: Merging added files %s to %s from %s" 
                 % (commitfiles, _init_branch, INSTALLBRANCH),
                 _init_branch, INSTALLBRANCH)
-        
+        utils.quit()
+                    
     elif cmmd == 'ls':
+        # would be nice to indicate which files in the list output are already
+        # tracked*
         channel = utils.get_channel(user, hosts[0], port, sudopw)
         try:
             dirpath = args[1]
@@ -202,6 +208,7 @@ if __name__=='__main__':
         print "Directory: %s" % directory
         for f in channel.ls(directory):
             print f
+        utils.quit()
 
     elif cmmd == 'install':
         # 1. Diff the WD (_init_branch) and INSTALLBRANCH to determine changes.
@@ -262,9 +269,11 @@ if __name__=='__main__':
                       "%s to %s from %s for install operation."
                       % (utils.list2string(wdchanges), 
                       INSTALLBRANCH, _init_branch), 
-                      INSTALLBRANCH, _init_branch)         
+                      INSTALLBRANCH, _init_branch)
+            utils.quit()         
         else:
             print "No changes to upload"
+        
     
     elif cmmd == 'run':
         """Run an arbatrary command on all Distribution Hosts."""

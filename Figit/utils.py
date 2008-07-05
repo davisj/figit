@@ -6,7 +6,7 @@ import sha
 from os.path import join, sep
 from fnmatch import fnmatch
 
-def quit(msg="Done"):
+def quit(msg="\nDone"):
     """Clean up and exit."""
     try:
         M.commit()

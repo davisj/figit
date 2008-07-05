@@ -139,3 +139,6 @@ class SSHChannel:
         except IOError:
             return self.run("echo %s | sudo mv %s %s" 
                             % (self.sudopw, rpath, rpath+'.bak'))
+                            
+    def close(self):
+        self.client.close()
